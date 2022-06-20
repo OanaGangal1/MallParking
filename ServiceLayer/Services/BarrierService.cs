@@ -47,17 +47,21 @@ namespace ServiceLayer.Services
 
             _ticketService.BarrierScanTicket(ticket);
 
-            if (bill.Fee == 0.0 && billInfo.Fee == 0.0)
+            if (bill.Fee <= 0.0 && billInfo.Fee == 0.0)
             {
-                _ticketService.CloseTicket(ticket);
+                _ticketService.SetStatus(ticket, TicketStatus.Closed);
                 _billService.RemoveBill(ticket, bill);
                 return billInfo;
             }
 
-            if (bill.PaidAt != null && billInfo.Fee != 0)
+            if (ticket.Status == TicketStatus.Ready && billInfo.Fee != 0)
             {
-                _ticketService.ActivateTicket(ticket);
+                _ticketService.SetStatus(ticket, TicketStatus.Active);
                 _billService.Charge(bill, billInfo.Fee);
+
+                ticket.ATMScannedAt = null;
+                _unitOfWork.Tickets.Update(ticket);
+
                 throw new AppException(ErrorMessage.TicketUnpaidAfterScan(_appUtility.AfterScanPeriod));
             }
             

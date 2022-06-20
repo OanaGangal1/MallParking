@@ -11,11 +11,6 @@ using ServiceLayer.Utilities;
 
 namespace ServiceLayer.Services
 {
-    public interface IBillingService
-    {
-        BillInfoDto GetBillInfo(Ticket ticket);
-    }
-
     public class BillingService : IBillingService
     {
         private readonly IAppUtility _appUtility;
@@ -26,33 +21,37 @@ namespace ServiceLayer.Services
         }
         public BillInfoDto GetBillInfo(Ticket ticket)
         {
-            var timeSpan = DateTime.UtcNow - ticket.CreatedAt;
-            var elapsedMillisec = timeSpan.TotalMilliseconds;
+            var timeSpanCreatedAt = DateTime.UtcNow - ticket.CreatedAt;
+            var elapsedMillisec = timeSpanCreatedAt.TotalMilliseconds;
 
             if (ticket.ActiveBill.PaidAt != null)
             {
-                timeSpan = DateTime.UtcNow - ticket.ATMScannedAt!.Value;
+                var timeSpan = DateTime.UtcNow - ticket.ActiveBill.PaidAt.Value;
 
                 if (timeSpan.TotalMilliseconds <= _appUtility.AfterScanPeriod + _appUtility.Tick)
                     return new BillInfoDto
                     {
                         ElapsedTime = new TimeRepresentation
                         {
-                            Hours = timeSpan.Hours,
-                            Minutes = timeSpan.Minutes,
-                            Seconds = timeSpan.Seconds
+                            Hours = timeSpanCreatedAt.Hours,
+                            Minutes = timeSpanCreatedAt.Minutes,
+                            Seconds = timeSpanCreatedAt.Seconds
                         },
                         Fee = 0.0
                     };
+
+                elapsedMillisec = elapsedMillisec < _appUtility.FreeParkingPeriod
+                    ? _appUtility.FreeParkingPeriod + timeSpan.TotalMilliseconds
+                    : elapsedMillisec;
             }
 
             return new BillInfoDto
             {
                 ElapsedTime = new TimeRepresentation
                 {
-                    Hours = timeSpan.Hours,
-                    Minutes = timeSpan.Minutes,
-                    Seconds = timeSpan.Seconds
+                    Hours = timeSpanCreatedAt.Hours,
+                    Minutes = timeSpanCreatedAt.Minutes,
+                    Seconds = timeSpanCreatedAt.Seconds
                 },
                 Fee = CalculateFee(elapsedMillisec)
             };

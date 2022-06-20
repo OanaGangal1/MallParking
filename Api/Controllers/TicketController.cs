@@ -38,8 +38,8 @@ namespace Api.Controllers
             };
         }
 
-        [HttpGet("allClosed")]
-        public IEnumerable<TicketDto> GetAllClosed() => _ticketService.GetClosedTickets();
+        [HttpGet("all")]
+        public IEnumerable<TicketDto> GetAllClosed() => _ticketService.GetAllTickets();
 
     }
 }

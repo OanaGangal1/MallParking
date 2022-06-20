@@ -13,18 +13,6 @@ using ServiceLayer.Utilities;
 
 namespace ServiceLayer.Services
 {
-    public interface ITicketService
-    {
-        TicketDto NewTicket();
-        Ticket GetTicket(string code);
-        IEnumerable<TicketDto> GetTickets();
-        bool ActivateTicket(Ticket ticket);
-        bool CloseTicket(Ticket ticket);
-        bool ATMScanTicket(Ticket ticket);
-        bool BarrierScanTicket(Ticket ticket);
-        IEnumerable<TicketDto> GetClosedTickets();
-    }
-
     public class TicketService : ITicketService
     {
         private readonly IUnitOfWork _unitOfWork;
@@ -55,6 +43,8 @@ namespace ServiceLayer.Services
         
         public Ticket GetTicket(string code) => _unitOfWork.Tickets.GetByCode(code);
 
+        public Ticket GetActiveTicket(string code) => _unitOfWork.Tickets.GetActiveByCode(code);
+
         public IEnumerable<TicketDto> GetTickets()
         { 
             var tickets = _unitOfWork.Tickets.GetActiveTickets();
@@ -69,7 +59,7 @@ namespace ServiceLayer.Services
                 .ToList();
         }
 
-        public IEnumerable<TicketDto> GetClosedTickets()
+        public IEnumerable<TicketDto> GetAllTickets()
         {
             var tickets = _unitOfWork.Tickets.GetAll();
 
@@ -83,18 +73,12 @@ namespace ServiceLayer.Services
                 .ToList();
         }
 
-        public bool ActivateTicket(Ticket ticket)
+        public bool SetStatus(Ticket ticket, TicketStatus status)
         {
-            ticket.Status = TicketStatus.Active;
+            ticket.Status = status;
             return _unitOfWork.Tickets.Update(ticket);
         }
-
-        public bool CloseTicket(Ticket ticket)
-        {
-            ticket.Status = TicketStatus.Closed;
-            return _unitOfWork.Tickets.Update(ticket);
-        }
-
+        
         public bool ATMScanTicket(Ticket ticket)
         {
             ticket.ATMScannedAt = DateTime.UtcNow;

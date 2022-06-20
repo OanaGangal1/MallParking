@@ -22,7 +22,7 @@ namespace Api.Controllers
         [HttpGet("scan/{ticketCode}")]
         public BillInfoDto ATMScan(string ticketCode)
         {
-            var ticket = _ticketService.GetTicket(ticketCode);
+            var ticket = _ticketService.GetActiveTicket(ticketCode);
             if (ticket == null)
                 throw new BadRequestException(ErrorMessage.NoTicket);
 
@@ -32,7 +32,7 @@ namespace Api.Controllers
         [HttpPost("pay")]
         public FeeDto Pay(PayTicketDto payTicket)
         {
-            var ticket = _ticketService.GetTicket(payTicket.TicketCode);
+            var ticket = _ticketService.GetActiveTicket(payTicket.TicketCode);
             if (ticket == null)
                 throw new BadRequestException(ErrorMessage.NoTicket);
 

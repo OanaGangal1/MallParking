@@ -25,7 +25,7 @@ static void AddServices(IServiceCollection services)
 
 static void AddAppUtility(IServiceCollection services)
 {
-    services.AddSingleton<IAppUtility, AppUtility>();
+    services.AddSingleton<IAppUtility, TestAppUtility>();
 }
 
 

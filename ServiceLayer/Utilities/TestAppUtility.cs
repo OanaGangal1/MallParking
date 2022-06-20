@@ -16,13 +16,13 @@ namespace ServiceLayer.Utilities
 
         public TestAppUtility()
         {
-            FreeParkingPeriod = 60000;
+            FreeParkingPeriod = 2 * 60 * 1000;
 
-            AfterScanPeriod = 60000;
+            AfterScanPeriod = 60 * 1000;
 
             FeePerHour = 5;
 
-            Tick = 100;
+            Tick = 1000;
         }
     }
 }
