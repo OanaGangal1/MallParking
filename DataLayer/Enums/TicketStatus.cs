@@ -9,7 +9,7 @@ namespace DataLayer.Enums
     public enum TicketStatus
     {
         Active = 0,
-        Paid = 10,
+        //Paid = 10,
         Closed = 20
     }
 }

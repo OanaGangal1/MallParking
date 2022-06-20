@@ -7,6 +7,7 @@ using ServiceLayer.Utilities;
 
 namespace Api.Controllers
 {
+    [Route("api/[controller]")]
     public class ATMController : ControllerBase
     {
         private readonly ITicketService _ticketService;
@@ -18,7 +19,7 @@ namespace Api.Controllers
             _atmService = atmService;
         }
 
-        [HttpGet("scan")]
+        [HttpGet("scan/{ticketCode}")]
         public BillInfoDto ATMScan(string ticketCode)
         {
             var ticket = _ticketService.GetTicket(ticketCode);
@@ -28,14 +29,14 @@ namespace Api.Controllers
             return _atmService.Scan(ticket);
         }
 
-        [HttpGet("pay")]
-        public bool Pay(string ticketCode)
+        [HttpPost("pay")]
+        public FeeDto Pay(PayTicketDto payTicket)
         {
-            var ticket = _ticketService.GetTicket(ticketCode);
+            var ticket = _ticketService.GetTicket(payTicket.TicketCode);
             if (ticket == null)
                 throw new BadRequestException(ErrorMessage.NoTicket);
 
-            return _atmService.Pay(ticket);
+            return _atmService.Pay(ticket, payTicket.Fee);
         }
     }
 }

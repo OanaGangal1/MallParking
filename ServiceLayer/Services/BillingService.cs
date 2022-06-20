@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using DataLayer.Entities;
 using DataLayer.Enums;
 using ServiceLayer.Dtos;
+using ServiceLayer.Interfaces;
 using ServiceLayer.Utilities;
 
 namespace ServiceLayer.Services
@@ -17,16 +18,22 @@ namespace ServiceLayer.Services
 
     public class BillingService : IBillingService
     {
+        private readonly IAppUtility _appUtility;
+
+        public BillingService(IAppUtility appUtility)
+        {
+            _appUtility = appUtility;
+        }
         public BillInfoDto GetBillInfo(Ticket ticket)
         {
             var timeSpan = DateTime.UtcNow - ticket.CreatedAt;
             var elapsedMillisec = timeSpan.TotalMilliseconds;
 
-            if (ticket.Status == TicketStatus.Paid)
+            if (ticket.ActiveBill.PaidAt != null)
             {
-                timeSpan = DateTime.UtcNow - ticket.ScannedAt!.Value;
+                timeSpan = DateTime.UtcNow - ticket.ATMScannedAt!.Value;
 
-                if (timeSpan.TotalMilliseconds <= AppUtility.AfterScanPeriod + AppUtility.Tick)
+                if (timeSpan.TotalMilliseconds <= _appUtility.AfterScanPeriod + _appUtility.Tick)
                     return new BillInfoDto
                     {
                         ElapsedTime = new TimeRepresentation
@@ -53,9 +60,9 @@ namespace ServiceLayer.Services
 
         private double CalculateFee(double milliseconds)
         {
-            if (milliseconds <= AppUtility.FreeParkingPeriod + AppUtility.Tick)
+            if (milliseconds <= _appUtility.FreeParkingPeriod + _appUtility.Tick)
                 return 0.0;
-            return AppUtility.FeePerHour * Math.Round(milliseconds / AppUtility.FreeParkingPeriod, MidpointRounding.AwayFromZero);
+            return _appUtility.FeePerHour * Math.Round(milliseconds / _appUtility.FreeParkingPeriod, MidpointRounding.AwayFromZero);
         }
     }
 }

@@ -7,6 +7,7 @@ using ServiceLayer.Utilities;
 
 namespace Api.Controllers
 {
+    [Route("api/[controller]")]
     public class TicketController : ControllerBase
     {
         private readonly ITicketService _ticketService;
@@ -19,7 +20,26 @@ namespace Api.Controllers
         [HttpPost("new")]
         public TicketDto CreateNew() => _ticketService.NewTicket();
 
-        [HttpGet("all")]
+        [HttpGet("allActive")]
         public IEnumerable<TicketDto> GetAll() => _ticketService.GetTickets();
+
+        [HttpGet("activeByCode")]
+        public TicketDto GetByCode(string code)
+        {
+            var ticket = _ticketService.GetTicket(code);
+            if (ticket == null)
+                throw new BadRequestException(ErrorMessage.NoTicket);
+
+            return new TicketDto
+            {
+                Code = ticket.Code,
+                Status = Enum.GetName(ticket.Status),
+                CreatedAt = ticket.CreatedAt,
+            };
+        }
+
+        [HttpGet("allClosed")]
+        public IEnumerable<TicketDto> GetAllClosed() => _ticketService.GetClosedTickets();
+
     }
 }

@@ -7,29 +7,22 @@ using ServiceLayer.Interfaces;
 
 namespace ServiceLayer.Utilities
 {
-    public class AppUtility : IAppUtility
+    public class TestAppUtility : IAppUtility
     {
-        /// <summary>
-        /// Free parking period expressed in milliseconds
-        /// </summary>
         public double FreeParkingPeriod { get; init; }
-
         public double AfterScanPeriod { get; init; }
-
         public double FeePerHour { get; init; }
-
         public double Tick { get; init; }
 
-        public AppUtility()
+        public TestAppUtility()
         {
-            FreeParkingPeriod = 2 * 60 * 60 * 1000;
+            FreeParkingPeriod = 60000;
 
-            AfterScanPeriod = 0.25 * 60 * 60 * 1000;
+            AfterScanPeriod = 60000;
 
             FeePerHour = 5;
 
-            Tick = 1000;
+            Tick = 100;
         }
-
     }
 }

@@ -17,35 +17,51 @@ namespace ServiceLayer.Services
     {
         private readonly IBillingService _billingService;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IBillService _billService;
+        private readonly ITicketService _ticketService;
+        private readonly IAppUtility _appUtility;
 
-        public BarrierService(IBillingService billingService, IUnitOfWork unitOfWork)
+        public BarrierService(IBillingService billingService, 
+            IUnitOfWork unitOfWork, 
+            IBillService billService,
+            ITicketService ticketService,
+            IAppUtility appUtility)
         {
             _billingService = billingService;
             _unitOfWork = unitOfWork;
+            _billService = billService;
+            _ticketService = ticketService;
+            _appUtility = appUtility;
         }
 
         public BillInfoDto Scan(Ticket ticket)
         {
-            if (ticket.Status == TicketStatus.Closed)
-                throw new BadRequestException(ErrorMessage.TicketUsed);
+            if (ticket.ATMScannedAt == null)
+                throw new BadRequestException(ErrorMessage.TicketNotATMScanned);
 
             var billInfo = _billingService.GetBillInfo(ticket);
+            var bill = _billService.GetBill(ticket.Id);
 
-            if (ticket.Fee == 0.0 && billInfo.Fee == 0.0)
-            { 
-                ticket.Close();
-                _unitOfWork.Tickets.Update(ticket);
+            if (bill == null)
+                throw new Exception(ErrorMessage.ServerError);
+
+            _ticketService.BarrierScanTicket(ticket);
+
+            if (bill.Fee == 0.0 && billInfo.Fee == 0.0)
+            {
+                _ticketService.CloseTicket(ticket);
+                _billService.RemoveBill(ticket, bill);
                 return billInfo;
             }
 
-            if (ticket.Status == TicketStatus.Paid && billInfo.Fee != 0)
+            if (bill.PaidAt != null && billInfo.Fee != 0)
             {
-                ticket.Status = TicketStatus.Active;
-                _unitOfWork.Tickets.Update(ticket);
-                throw new BadRequestException(ErrorMessage.TicketUnpaidAfterScan());
+                _ticketService.ActivateTicket(ticket);
+                _billService.Charge(bill, billInfo.Fee);
+                throw new AppException(ErrorMessage.TicketUnpaidAfterScan(_appUtility.AfterScanPeriod));
             }
             
-            throw new BadRequestException(ErrorMessage.TicketUnpaid(billInfo.Fee));
+            throw new AppException(ErrorMessage.TicketUnpaid(billInfo.Fee));
         }
     }
 }

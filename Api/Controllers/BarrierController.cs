@@ -7,6 +7,7 @@ using ServiceLayer.Utilities;
 
 namespace Api.Controllers
 {
+    [Route("api/[controller]")]
     public class BarrierController : ControllerBase
     {
         private readonly ITicketService _ticketService;
@@ -18,8 +19,8 @@ namespace Api.Controllers
             _barrierService = barrierService;
         }
 
-        [HttpGet("scan")]
-        public BillInfoDto ATMScan(string ticketCode)
+        [HttpGet("scan/{ticketCode}")]
+        public BillInfoDto BarrierScan(string ticketCode)
         {
             var ticket = _ticketService.GetTicket(ticketCode);
             if (ticket == null)
